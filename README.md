@@ -59,7 +59,7 @@ make install
 ```
 
 ```bash
-make run-app
+make run-langchain_agent
 ```
 
 Open [http://localhost:8000/docs](http://localhost:8000/docs) with your browser to see the result.
@@ -92,7 +92,7 @@ if you want to run the frontend server without docker, you need to install the d
 
 ```bash
 cd frontend
-cd app
+cd langchain_agent
 poetry install
 streamlit run streamlit_app.py
 ```

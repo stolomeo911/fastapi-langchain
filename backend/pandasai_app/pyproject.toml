@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "apollo-chatbot-frontend"
+version = "0.1.0"
+description = ""
+authors = ["stefano.tolomeo <stefano.tolomeo@gostudent.org>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyyaml = "^6.0.1"
+awswrangler = {extras = ["redshift"], version = "^3.7.3"}
+retrying = "^1.3.4"
+typer = "^0.12.3"
+path = "^16.14.0"
+aiohttp = "^3.9.5"
+pandasai = "^2.1.1"
+fastapi = "^0.111.0"
+chromadb = "^0.5.0"
+qdrant-client = "^1.9.1"
+requests-toolbelt = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

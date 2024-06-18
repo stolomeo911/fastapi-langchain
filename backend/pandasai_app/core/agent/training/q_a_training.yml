@@ -1,0 +1,306 @@
+leads created?:
+  | 
+  import pandas as pd
+  
+  df = dfs[0]
+  
+  # Calculate the total sales for the current fiscal year
+  leads = df['contact_id'].nunique()
+  
+  result = { "type": "number", "value": leads }
+customers acquired?:
+  | 
+  import pandas as pd
+  
+  df = dfs[0]
+  
+  # Calculate the total sales for the current fiscal year
+  customers = df[~df.customer_date.isna()]['deal_id'].nunique()
+  
+  result = { "type": "number", "value": customers }
+trials booked?:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate trials booked
+  trials_booked = df[(~df.trial_booked_date.isna())]['contact_id'].nunique()
+
+  result = { "type": "number", "value": trials_booked }
+
+trials completed?:
+  | 
+  import pandas as pd
+  
+  df = dfs[0]
+  
+  # Calculate the total sales for the current fiscal year
+  trials_completed = df[(~df.trial_booked_date.isna()) & (df.trial_completed == 1)]['contact_id'].nunique()
+  
+  result = { "type": "number", "value": trials_completed }
+self-booked?:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate the total sales for the current fiscal year
+  self_booked_leads = df[(df['self_booked'] == 1)]['contact_id'].nunique()
+
+  result = { "type": "number", "value": self_booked_leads }
+self-booked trial?:
+  |
+  import pandas as pd
+  
+  df = dfs[0]
+  
+  # Calculate the total sales for the current fiscal year
+  self_booked_trials = df[(~df.trial_booked_date.isna()) & (df['self_booked'] == 1)]['contact_id'].nunique()
+  
+  result = { "type": "number", "value": self_booked_trials }
+customers conversion rate?:
+  | 
+  import pandas as pd
+  
+  df = dfs[0]
+  
+  # Calculate the total sales for the current fiscal year
+  df['customers']= df[~df.customer_date.isna()]['deal_id'].nunique()
+  df['leads'] = df['contact_id'].nunique()
+  
+  conversion_rate = df.customers/df.leads
+  result = { "type": "number", "value": conversion_rate }
+customers conversion rate lead cohorted?:
+  | 
+  import pandas as pd
+  
+  df = dfs[0]
+  
+  # Calculate the number of customers grouped by lead timestamp
+  customers_by_lead_timestamp = df[~df['customer_date'].isna()].groupby('lead_timestamp')['deal_id'].nunique().reset_index(name='customers')
+  
+  # Calculate the number of leads
+  leads_by_lead_timestamp = df.groupby('lead_timestamp')['contact_id'].nunique().reset_index(name='leads')
+  
+  # Merge the customers and leads dataframes on lead_timestamp
+  merged_df = pd.merge(customers_by_lead_timestamp, leads_by_lead_timestamp, on='lead_timestamp', how='right').fillna(0)
+  
+  # Calculate the conversion rate
+  merged_df['conversion_rate'] = merged_df['customers'] / merged_df['leads']
+  
+  # Extract the overall conversion rate
+  total_customers = merged_df['customers'].sum()
+  total_leads = merged_df['leads'].sum()
+  overall_conversion_rate = total_customers / total_leads if total_leads > 0 else 0
+  
+  result = {"type": "number", "value": overall_conversion_rate}
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate the total sales for the current fiscal year
+  df['trials']=  df[(~df.trial_booked_date.isna()) & (df.trial_completed == 1)]['contact_id'].nunique()
+  df['customers'] =  df[~df.customer_date.isna()]['deal_id'].nunique()
+
+  conversion_rate = df.trials/df.customers
+  result = { "type": "number", "value": conversion_rate }
+returning leads?:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate the total sales for the current fiscal year
+  returning_leads = df[df['is_new_lead'] == 0]['contact_id'].nunique()
+
+  result = { "type": "number", "value": returning_leads }
+new leads?:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate the total sales for the current fiscal year
+  returning_leads = df[df['is_new_lead'] == 1]['contact_id'].nunique()
+
+  result = { "type": "number", "value": returning_leads }
+month-over-month increase in total leads:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+  # Filter data to only include leads from January 2024 and February 2024
+  leads_jan_feb_2024 = df[(df['lead_timestamp'] >= '2024-01-01') & (df['lead_timestamp'] < '2024-03-01')]
+
+  # Group by month and count unique contact_ids to get total leads per month
+  monthly_leads = leads_jan_feb_2024.resample('M', on='lead_timestamp')['contact_id'].nunique()
+
+  # Calculate MoM increase from January to February 2024
+  jan_leads, feb_leads = monthly_leads['2024-01-31'], monthly_leads['2024-02-29']
+  mom_increase = ((feb_leads - jan_leads) / jan_leads) if jan_leads != 0 else None
+  result = { "type": "number", "value": mom_increase }
+month-over-month increase in total customers:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+  # Filter data to only include leads from January 2024 and February 2024
+  leads_jan_feb_2024 = df[(df['customer_date'] >= '2024-01-01') & (df['customer_date'] < '2024-03-01')]
+
+  # Group by month and count unique contact_ids to get total leads per month
+  monthly_customers = leads_jan_feb_2024.resample('M', on='customer_date')['deal_id'].nunique()
+
+  # Calculate MoM increase from January to February 2024
+  jan_customers, feb_customers = monthly_customers['2024-01-31'], monthly_customers['2024-02-29']
+  mom_increase = ((feb_customers - jan_customers) / jan_customers) if jan_customers != 0 else None
+  result = { "type": "number", "value": mom_increase }
+customers distribution by sub channel:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate the total sales for the current fiscal year
+  sub_channel_distribution = df[(~df['customer_date'].isna())].groupby('sub_channel')['deal_id'].nunique()
+
+  result = { "type": "dataframe", "value": sub_channel_distribution }
+customers with completed trial:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate the total sales for the current fiscal year
+  customers_with_completed_trial = df[(~df['trial_booked_date'].isna()) & (~df['customer_date'].isna())
+                                             & (df['trial_completed'] == 1)]['deal_id'].nunique()
+
+  result = { "type": "number", "value": customers_with_completed_trial }
+
+customers with a self-booked trial:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate the total sales for the current fiscal year
+  customers_with_self_booked_trial = df[(~df['trial_booked_date'].isna()) & (~df['customer_date'].isna())
+                                             & (df['self_booked'] == 1)]['deal_id'].nunique()
+
+  result = { "type": "number", "value": customers_with_completed_trial }
+
+number of leads in a weekly cohort:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+  # Resample the data to weekly periods
+  df['week'] = df['lead_timestamp'].dt.to_period('W').apply(
+            lambda r: r.start_time)
+  weekly_cohort = df.groupby('week')['contact_id'].nunique().reset_index(name='leads')
+  
+  result = { "type": "dataframe", "value": weekly_cohort }
+
+trial distribution by sub channel:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  # Calculate the total sales for the current fiscal year
+  sub_channel_distribution = df[(~df['trial_booked_date'].isna())].groupby('sub_channel')['contact_id'].nunique().reset_index()
+
+  result = { "type": "dataframe", "value": sub_channel_distribution }
+calculate run rate leads using last 4 weeks average week-over-week growth different for each weekeday:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+  
+  end_date = df['lead_timestamp'].max()
+   start_date = end_date - pd.DateOffset(weeks=4)
+   leads_last_4_weeks = df[(df['lead_timestamp'] >= start_date) & (df['lead_timestamp'] <= end_date)]
+
+   # Calculate the actual leads for the current month
+   current_month_start = end_date.replace(day=1)
+   actual_leads_current_month = df[
+       (df['lead_timestamp'] >= current_month_start) & (df['lead_timestamp'] <= end_date)]
+   actual_leads_daily = actual_leads_current_month.groupby(actual_leads_current_month['lead_timestamp'].dt.date)[
+       'contact_id'].nunique()
+
+   # Calculate the average number of leads per weekday over the last four weeks
+   leads_last_4_weeks['weekday'] = leads_last_4_weeks['lead_timestamp'].dt.weekday
+   avg_leads_per_weekday = leads_last_4_weeks.groupby('weekday')['contact_id'].nunique() / 4
+
+   # Calculate week-over-week growth for each weekday
+   leads_last_4_weeks['week'] = leads_last_4_weeks['lead_timestamp'].dt.isocalendar().week
+   weekly_leads = leads_last_4_weeks.groupby(['week', 'weekday'])['contact_id'].nunique().unstack()
+   wow_growth = weekly_leads.pct_change().mean()
+
+   # Calculate the estimated leads for the remaining days of the current month
+   last_day_of_month = current_month_start + pd.DateOffset(months=1) - pd.DateOffset(days=1)
+   remaining_days = pd.date_range(end_date + pd.DateOffset(days=1), last_day_of_month)
+   estimated_leads = pd.Series(index=remaining_days)
+
+   for day in remaining_days:
+       weekday = day.weekday()
+       growth_factor = 1 + (wow_growth[weekday] if weekday in wow_growth else 0)
+       previous_weekday_value = actual_leads_daily[day - pd.DateOffset(weeks=1)] if (day - pd.DateOffset(weeks=1)).date() in actual_leads_daily.index else avg_leads_per_weekday[weekday]
+       estimated_leads[day] = previous_weekday_value * growth_factor
+
+   # Combine actual leads and estimated leads into a single dataframe
+   daily_leads_combined = pd.concat([actual_leads_daily, estimated_leads]).reset_index()
+   daily_leads_combined.columns = ['date', 'leads']
+  
+   result = { "type": "dataframe", "value": daily_leads_combined }
+
+self-booked trial completed rate:
+  |
+  import pandas as pd
+  
+  df = dfs[0]
+  
+  # Calculate the total sales for the current fiscal year
+  trial_completed_rate = df[(~df['trial_booked_date'].isna())&(df['self_booked'] == 1)].trial_completed.mean()
+  
+  result = { "type": "number", "value": trial_completed_rate }
+
+self-booked trials weekly cohort:
+  |
+  import pandas as pd
+
+  df = dfs[0]
+
+  trials_jan_feb_2024 = df[(df['lead_timestamp'] >= '2024-01-01') & (df['lead_timestamp'] < '2024-03-01')
+                                 & (~df['trial_booked_date'].isna()) & (df['self_booked'] == 1)]
+
+  # Resample the data to weekly periods
+  trials_jan_feb_2024['week'] = trials_jan_feb_2024['lead_timestamp'].dt.to_period('W').apply(
+            lambda r: r.start_time)
+
+  # Calculate the number of customers grouped by weekly cohort
+  customers_by_week = trials_jan_feb_2024[~trials_jan_feb_2024['customer_date'].isna()].groupby('week')[
+            'deal_id'].nunique().reset_index(name='customers')
+
+  # Calculate the number of leads grouped by weekly cohort
+  trials_by_week = trials_jan_feb_2024.groupby('week')['contact_id'].nunique().reset_index(name='trials')
+
+  # Merge the customers and leads dataframes on week
+  merged_df = pd.merge(customers_by_week, trials_by_week, on='week', how='left').fillna(0)
+
+  # Calculate the conversion rate
+  merged_df['conversion_rate'] = merged_df['customers'] / merged_df['trials']
+
+  # Round the conversion rates to two decimal places for consistency
+  merged_df['conversion_rate'] = merged_df['conversion_rate']
+
+  conversion_rate_df = merged_df[['week', 'conversion_rate']]
+
+  result = { "type": "dataframe", "value": conversion_rate_df }
+monthly trend of customer acquisitions:
+  |
+  monthly_trend = df[~df['customer_date'].isna()].resample('M', on='customer_date')['deal_id'].nunique().reset_index()
+  monthly_trend.columns = ['period', 'number_of_customers']
+  
+  result = { "type": "dataframe", "value": monthly_trend }

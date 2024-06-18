@@ -1,0 +1,5 @@
+- when the question include lead or leads actually is meant leads created. remember is the distinct of contact_id
+- when the question include customer or customers actually is meant customers created. remember is the distinct of deal_id.
+- when the question includes trials or trial, count trial events using distinct contact_id.
+- when the question includes 'self-booked' , it means using rows where self_booked is 1. You might need additional filters for trials or customers
+- weekly / week aggregation have as starting date Monday. Use pd.grouper(pd.Grouper(freq='W-SUN')) to aggregate the relevant period
