@@ -1,5 +1,5 @@
 import unittest
-from backend.langchain_app.core.agent.pandasai_agent import get_agent
+from backend.pandasai_app.core.agent.pandasai_agent import get_agent
 import pandas as pd
 import yaml
 from yaml import Loader
@@ -16,9 +16,9 @@ class AgentUnitTestLeads(unittest.TestCase):
         # This method will be called before each tests case
         # Create sample data for testing
         self.agent = get_agent()
-        config = yaml.load(open('backend/langchain_app/core/agent/training/config.yml'), Loader=Loader)
+        config = yaml.load(open('backend/pandasai_app/core/agent/training/config.yml'), Loader=Loader)
         self.config = config
-        with open('backend/langchain_app/core/agent/tests/leads/questions.yml') as file:
+        with open('backend/pandasai_app/core/agent/tests/climate_change/questions.yml') as file:
             self.questions = yaml.load(file, Loader=Loader)['questions']
 
     def tearDown(self):
@@ -27,4 +27,8 @@ class AgentUnitTestLeads(unittest.TestCase):
         pass
 
     def test_leads_number_in_2024(self):
-        pass
+        #df = pd.read_pickle(self.config['pickle_path'])
+        #leads_2024 = df[df['lead_timestamp'].dt.year == 2024]['contact_id'].nunique()
+        response = self.agent.chat(self.questions['top_country_with_temp_increase'])
+        print(response)
+        #self.assertEquals(leads_2024, response)

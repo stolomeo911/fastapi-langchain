@@ -10,9 +10,9 @@ import yaml
 from yaml import Loader
 import typer
 from shared_libraries.utils import setup_logger
-from backend.langchain_app.core.agent.pandasai_llm import get_llm
-from backend.langchain_app.core.agent.pandasai_vector_store import get_pandasai_vector_store
-from backend.langchain_app.core.agent.agent_skills import plot_daily_run_rate_leads
+from backend.pandasai_app.core.agent.pandasai_llm import get_llm
+from backend.pandasai_app.core.agent.pandasai_vector_store import get_pandasai_vector_store
+from backend.pandasai_app.core.agent.agent_skills import plot_daily_run_rate_leads
 import warnings
 warnings.simplefilter('ignore')
 matplotlib.use('Agg')
@@ -48,11 +48,17 @@ def get_pandasai_agent(connector, config, vector_store=None, description=None):
 
 
 @app.command()
-def get_agent(mode='pandas_generator', add_skills=True) -> Agent:
-    config = yaml.load(open('backend/langchain_app/core/agent/training/config.yml'), Loader=Loader)
+def get_agent(source='csv', mode='pandas_generator', add_skills=True) -> Agent:
+    config = yaml.load(open('backend/pandasai_app/core/agent/training/config.yml'), Loader=Loader)
     metadata = yaml.load(open(config['metadata']), Loader=Loader)
 
-    df = pd.read_pickle(config['pickle_path'])
+    if source == 'csv':
+        df = pd.read_csv(config['file_path'])
+    elif source == 'pickle':
+        df = pd.read_pickle(config['file_path'])
+    else:
+        raise NotImplementedError
+
     connector = PandasConnector({"original_df": df}, field_descriptions=metadata)
     llm_type = config['llm_type']
     llm = get_llm(llm_type)
