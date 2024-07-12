@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException, Response
-from backend.langchain_app.api.routes import agent, user
-from backend.langchain_app.api.utils.custom_json_encoder import CustomJSONResponse
+from backend.pandasai_app.api.routes import agent, user
+from backend.pandasai_app.api.utils.custom_json_encoder import CustomJSONResponse
 from shared_libraries.utils import _fetch_secret_key
 import logging
 import json

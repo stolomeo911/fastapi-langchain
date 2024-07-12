@@ -74,3 +74,9 @@ run_test_agent_climate_change:
 
 set_python_path:
 	export PYTHONPATH=/Users/stefano.tolomeo/PycharmProjects/fastapi-langchain
+
+run_backend:
+	uvicorn backend.pandasai_app.main:app --port 8000
+
+run_app:
+	python frontend/app/main.py

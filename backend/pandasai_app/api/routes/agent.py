@@ -3,10 +3,10 @@ from fastapi.responses import JSONResponse, FileResponse
 from requests_toolbelt import MultipartEncoder
 from typing import Union
 
-from backend.langchain_app.api.models import Question, AgentResponse, TestedQuestions
+from backend.pandasai_app.api.models import Question, AgentResponse, TestedQuestions
 import logging
-from backend.langchain_app.core.agent.pandasai_agent import get_agent, chat_with_agent, get_dataframe_from_response
-from backend.langchain_app.core.agent.pandasai_smart_df import get_current_used_pickle
+from backend.pandasai_app.core.agent.pandasai_agent import get_agent, chat_with_agent, get_dataframe_from_response
+from backend.pandasai_app.core.agent.pandasai_smart_df import get_current_used_pickle
 import os
 import yaml
 from yaml import Loader

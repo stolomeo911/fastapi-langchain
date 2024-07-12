@@ -1,6 +1,6 @@
 import pandas as pd
 from pandasai import SmartDataframe
-from backend.langchain_app.core.utils.db_utils import sql_to_df
+from backend.pandasai_app.core.utils.db_utils import sql_to_df
 import typer
 from shared_libraries.utils import setup_logger  # Ensure this path is correct
 import yaml
