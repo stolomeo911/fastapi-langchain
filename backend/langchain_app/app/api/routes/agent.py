@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from ..models import Message, ModelResponse
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import ConversationChain
-from ...llm.offline_llm import llm
+from ...llm.llm import llm
 from langchain.memory import ConversationBufferWindowMemory
 import json
 import logging
