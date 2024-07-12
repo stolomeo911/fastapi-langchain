@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "test-scalable"
+version = "0.1.0"
+description = ""
+authors = ["stolomeo911 <stefano.tolomeo91@gmail.com>"]
+readme = "README.md"
+packages = [{include = "test_scalable"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = "0.1.12"
+fastapi = "0.68.0"
+uvicorn = "0.15.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
