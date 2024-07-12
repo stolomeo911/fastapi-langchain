@@ -7,6 +7,8 @@ from helpers.persist_session_state import save_session_state, load_session_state
 from helpers.make_request import make_request
 from utils.logs import setup_logger
 from consts import URL, PERSIST_DIR, SESSION_ID
+import pandas as pd
+from io import BytesIO
 
 logger = setup_logger(__name__)
 
@@ -14,22 +16,13 @@ persist_file_path = PERSIST_DIR + f'{SESSION_ID}_session_state.json'
 load_session_state(st.session_state, file_path=persist_file_path)
 
 
-async def retrieve_bot_response(user_input, session_id, uploaded_files=None):
+async def retrieve_bot_response(user_input, session_id):
     async with aiohttp.ClientSession() as session:
-        payload = {
-            "user_input": user_input,
-            "session_id": session_id
-        }
-
-        files = {}
-        if uploaded_files:
-            for uploaded_file in uploaded_files:
-                files[uploaded_file.name] = (uploaded_file.name, uploaded_file.getvalue())
-
-        data = await make_request(session, 'post', f'{URL}/agent/ask_question',
-                                  json={"query": user_input, "user_id": 'try',
-                                        "slack_id": session_id, "llm_type": 'llm_type'},
-                                  files=files)
+        payload = {"query": user_input, "user_id": 'try',
+                                        "slack_id": session_id, "llm_type": 'gpt'}
+        print(payload)
+        data = await make_request(session, 'get', f'{URL}/agent/ask_question',
+                                  json=payload)
         if "agent_response" in data.keys():
             agent_response = data["agent_response"]
         else:
@@ -52,10 +45,16 @@ async def retrieve_bot_response(user_input, session_id, uploaded_files=None):
             file_info = data.get('file')
             if file_info:
                 filename, file_data = file_info
+                file_data = bytes(file_data)  # Convert bytearray to bytes
                 with open(filename, "wb") as f:
                     f.write(file_data)
                 st.write('File uploaded:', filename)
                 st.download_button('Download file', data=file_data, file_name=filename)
+                if filename.endswith(('png', 'jpg', 'jpeg')):
+                    st.image(file_data, caption=filename)
+                elif filename.endswith('csv'):
+                    df = pd.read_csv(BytesIO(file_data))
+                    st.dataframe(df)
         else:
             st.markdown(response)
 
@@ -69,7 +68,7 @@ async def retrieve_bot_response(user_input, session_id, uploaded_files=None):
                     stream_data = response["error"]
 
                 if counter == 1:
-                    stream_data = format_response(response)
+                    stream_data = response
                 st.markdown(stream_data)
             except asyncio.TimeoutError:
                 st.warning("Connection timed out. Closing the connection.")
@@ -77,7 +76,7 @@ async def retrieve_bot_response(user_input, session_id, uploaded_files=None):
         return stream_data
 
 
-st.title("Chatbot Scalable")
+st.title("Chatbot")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -88,9 +87,6 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# File uploader
-uploaded_files = st.file_uploader("Upload files (images or CSV)", type=['png', 'jpg', 'jpeg', 'csv'],
-                                  accept_multiple_files=True)
 
 # Accept user input
 if prompt := st.chat_input("What is up?"):
@@ -113,7 +109,7 @@ if prompt := st.chat_input("What is up?"):
         st.markdown('**Time:** ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
         full_response = asyncio.new_event_loop().run_until_complete(
-            retrieve_bot_response(prompt, SESSION_ID, uploaded_files)
+            retrieve_bot_response(prompt, SESSION_ID)
         )
 
     # Add assistant response to chat history

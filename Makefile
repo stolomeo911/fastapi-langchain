@@ -76,7 +76,7 @@ set_python_path:
 	export PYTHONPATH=/Users/stefano.tolomeo/PycharmProjects/fastapi-langchain
 
 run_backend:
-	uvicorn backend.pandasai_app.main:app --port 8000
+	uvicorn backend.pandasai_app.main:app --port 9000
 
 run_app:
-	python frontend/app/main.py
+	streamlit run frontend/app/main.py
