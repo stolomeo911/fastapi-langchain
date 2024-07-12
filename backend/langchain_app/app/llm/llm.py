@@ -27,7 +27,3 @@ class HuggingFaceLLM:
 # Create an instance of the real LLM
 llm = HuggingFaceLLM(model_name="gpt2", seed=42)
 
-# Example usage
-prompt = "Introduce a new neural network architecture."
-response = llm._call(prompt)
-print(response)
