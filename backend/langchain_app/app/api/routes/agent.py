@@ -18,6 +18,7 @@ session_memories = {}
 memory = ConversationBufferWindowMemory(k=4)
 
 
+
 @router.get("/chat")
 async def chat(message: Message) -> ModelResponse:
     logger.info('Chat request has been requested..')
