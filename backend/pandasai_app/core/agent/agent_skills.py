@@ -30,17 +30,17 @@ def plot_daily_run_rate_leads(dataframe: pd.DataFrame, save_charts_path: str):
     plt.figure(figsize=(12, 6))
 
     # Plot actual data
-    plt.plot(actual_data['date'], actual_data['leads'], color='blue', label='Actual')
+    plt.plot(actual_data['date'], actual_data['climate_change'], color='blue', label='Actual')
 
     # Plot expected data
-    plt.plot(expected_data['date'], expected_data['leads'], color='red', label='Expected')
+    plt.plot(expected_data['date'], expected_data['climate_change'], color='red', label='Expected')
 
     # Adding annotations
     for idx, row in actual_data.iterrows():
-        plt.annotate(f"{row['leads']:.0f}", (row['date'], row['leads']), textcoords="offset points", xytext=(0, 10),
+        plt.annotate(f"{row['climate_change']:.0f}", (row['date'], row['climate_change']), textcoords="offset points", xytext=(0, 10),
                      ha='center')
     for idx, row in expected_data.iterrows():
-        plt.annotate(f"{row['leads']:.0f}", (row['date'], row['leads']), textcoords="offset points", xytext=(0, 10),
+        plt.annotate(f"{row['climate_change']:.0f}", (row['date'], row['climate_change']), textcoords="offset points", xytext=(0, 10),
                      ha='center')
 
     # Customizing the plot

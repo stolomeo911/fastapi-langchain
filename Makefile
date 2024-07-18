@@ -1,7 +1,5 @@
 #!/usr/bin/make
 
-include .env
-
 help:
 	@echo "make"
 	@echo "    install"
@@ -70,3 +68,18 @@ lint-watch:
 lint-fix:
 	cd backend/app && \
 	poetry run ruff app --fix
+
+set_python_path:
+	export PYTHONPATH=/Users/stefano.tolomeo/PycharmProjects/fastapi-langchain
+
+run_backend:
+	uvicorn backend.pandasai_app.main:app --port 9000
+
+run_app:
+	streamlit run frontend/app/main.py
+
+training_agent:
+	python backend/app/core/agent/pandasai_agent.py train-agent
+
+run_test_agent_climate_change:
+	python -W ignore -m unittest discover backend/pandasai_app/core/agent/tests/climate_change/

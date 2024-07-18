@@ -1,13 +1,20 @@
 [tool.poetry]
-name = "fastapi-langchain"
+name = "test-scalable"
 version = "0.1.0"
 description = ""
 authors = ["stolomeo911 <stefano.tolomeo91@gmail.com>"]
 readme = "README.md"
-packages = [{include = "fastapi_langchain"}]
+packages = [{include = "test_scalable"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
+langchain = "0.1.12"
+fastapi = "0.68.0"
+uvicorn = "0.15.0"
+transformers = "^4.42.4"
+torch = "^2.3.1"
+torchvision = "^0.18.1"
+torchaudio = "^2.3.1"
 
 
 [build-system]

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response
 import pandas as pd
-from backend.langchain_app.core.utils.db_utils import get_connection_redshift
-from backend.langchain_app.api.models import Feedback
+from backend.pandasai_app.core.utils.db_utils import get_connection_redshift
+from backend.pandasai_app.api.models import Feedback
 import logging
 import awswrangler.redshift as rs
 
