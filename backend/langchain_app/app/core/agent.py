@@ -5,12 +5,11 @@ from langchain_core.messages import (
     AIMessage
 )
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from agent_tools import call_pandasai
+from .agent_tools import call_pandasai
 from langgraph.graph import END, StateGraph, START
 import functools
 from langgraph.prebuilt import ToolNode
 from typing import Literal
-from ..llm.llm import llm
 
 
 def create_agent(llm, tools, system_message: str):
@@ -84,14 +83,39 @@ def router(state) -> Literal["call_tool", "__end__", "continue"]:
 def set_agent_graph(agent_state, pandasai_agent_node, article_agent_node):
     # Define the state graph
     workflow = StateGraph(agent_state)
-    workflow.add_edge(START, pandasai_agent_node)
-    workflow.add_edge(pandasai_agent_node, article_agent_node)
-    workflow.add_edge(article_agent_node, END)
+
+    workflow.add_node("PandasAiAnalyst", pandasai_agent_node)
+    workflow.add_node("ArticleCreator", article_agent_node)
+
+    tools = [call_pandasai]
+    tool_node = ToolNode(tools)
+    workflow.add_node("call_tool", tool_node)
+
+    workflow.add_conditional_edges(
+        "PandasAiAnalyst",
+        router,
+        {"continue": "ArticleCreator", "call_tool": "call_tool", "__end__": END},
+    )
+    workflow.add_conditional_edges(
+        "ArticleCreator",
+        router,
+        {"continue": "PandasAiAnalyst", "call_tool": "call_tool", "__end__": END},
+    )
+
+    workflow.add_conditional_edges(
+        "call_tool",
+        # Each agent node updates the 'sender' field
+        # the tool calling node does not, meaning
+        # this edge will route back to the original agent
+        # who invoked the tool
+        lambda x: x["sender"],
+        {
+            "PandasAiAnalyst": "PandasAiAnalyst",
+            "ArticleCreator": "ArticleCreator",
+        },
+    )
+
+    workflow.add_edge(START, "PandasAiAnalyst")
 
     return workflow
-
-
-pandasai_agent_node, article_agent_node = set_nodes_for_ai_content_creator(llm)
-
-graph = workflow.compile()
 

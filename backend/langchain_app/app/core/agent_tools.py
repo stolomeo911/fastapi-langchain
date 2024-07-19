@@ -1,7 +1,7 @@
 import aiohttp
 from langchain_core.tools import tool
 from shared_libraries.make_request import make_request
-from consts import PANDASAI_URL
+from .consts import PANDASAI_URL
 
 
 @tool

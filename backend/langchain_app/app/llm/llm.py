@@ -25,4 +25,7 @@ class HuggingFaceLLM:
 
 
 # Create an instance of the real LLM
-llm = HuggingFaceLLM(model_name="gpt2", seed=42)
+from langchain_openai import ChatOpenAI
+llm = ChatOpenAI(model="gpt-4o-2024-05-13")
+
+#llm = HuggingFaceLLM(model_name="gpt2", seed=42)
