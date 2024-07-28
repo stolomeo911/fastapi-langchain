@@ -5,11 +5,14 @@ from langchain_core.messages import (
     AIMessage
 )
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from .agent_tools import call_pandasai
+from .agent_tools import call_pandasai, generate_journal_article
 from langgraph.graph import END, StateGraph, START
 import functools
 from langgraph.prebuilt import ToolNode
 from typing import Literal
+from langchain_cohere.react_multi_hop.agent import create_cohere_react_agent
+
+from langchain.agents import AgentExecutor
 
 
 def create_agent(llm, tools, system_message: str):
@@ -40,7 +43,7 @@ def add_agent_node(state, agent, name):
     if isinstance(result, ToolMessage):
         pass
     else:
-        result = AIMessage(result, name=name)
+        result = AIMessage(**result.dict(exclude={"type", "name"}), name=name)
     return {
         "messages": [result],
         # Since we have a strict workflow, we can
@@ -59,7 +62,7 @@ def set_nodes_for_ai_content_creator(llm):
 
     article_video_agent = create_agent(
         llm,
-        [],  # Assuming this agent does not need additional tools
+        [generate_journal_article],  # Assuming this agent does not need additional tools
         system_message="You are tasked with creating a journal article from the data analysis of maximum 250 words.",
     )
     article_agent_node = functools.partial(add_agent_node, agent=article_video_agent, name="ArticleCreator")
@@ -67,17 +70,13 @@ def set_nodes_for_ai_content_creator(llm):
     return pandasai_agent_node, article_agent_node
 
 
-def router(state) -> Literal["call_tool", "__end__", "continue"]:
+def router(state):
     # This is the router
     messages = state["messages"]
     last_message = messages[-1]
-    if last_message.tool_calls:
-        # The previous agent is invoking a tool
-        return "call_tool"
-    if "FINAL ANSWER" in last_message.content:
-        # Any agent decided the work is done
-        return "__end__"
-    return "continue"
+    if last_message != '' and state['sender'] == 'PandasAiAnalyst':
+        return "ArticleCreator"
+    return None
 
 
 def set_agent_graph(agent_state, pandasai_agent_node, article_agent_node):
@@ -87,35 +86,36 @@ def set_agent_graph(agent_state, pandasai_agent_node, article_agent_node):
     workflow.add_node("PandasAiAnalyst", pandasai_agent_node)
     workflow.add_node("ArticleCreator", article_agent_node)
 
-    tools = [call_pandasai]
-    tool_node = ToolNode(tools)
-    workflow.add_node("call_tool", tool_node)
-
     workflow.add_conditional_edges(
         "PandasAiAnalyst",
         router,
-        {"continue": "ArticleCreator", "call_tool": "call_tool", "__end__": END},
+        {"ArticleCreator": "ArticleCreator"},
     )
     workflow.add_conditional_edges(
         "ArticleCreator",
         router,
-        {"continue": "PandasAiAnalyst", "call_tool": "call_tool", "__end__": END},
-    )
-
-    workflow.add_conditional_edges(
-        "call_tool",
-        # Each agent node updates the 'sender' field
-        # the tool calling node does not, meaning
-        # this edge will route back to the original agent
-        # who invoked the tool
-        lambda x: x["sender"],
-        {
-            "PandasAiAnalyst": "PandasAiAnalyst",
-            "ArticleCreator": "ArticleCreator",
-        },
+        {"ArticleCreator": END},
     )
 
     workflow.add_edge(START, "PandasAiAnalyst")
 
     return workflow
 
+
+def create_cohere_agent(llm, tools):
+
+    # Prompt template
+    prompt = ChatPromptTemplate.from_template("{input}")
+
+    # Create the ReAct agent
+    agent = create_cohere_react_agent(
+       llm=llm,
+       tools=tools,
+       prompt=prompt,
+    )
+
+    agent_executor = AgentExecutor(agent=agent,
+                                   tools=tools,
+                                   verbose=True)
+
+    return agent_executor

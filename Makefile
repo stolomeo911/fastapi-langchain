@@ -72,8 +72,12 @@ lint-fix:
 set_python_path:
 	export PYTHONPATH=/Users/stefano.tolomeo/PycharmProjects/fastapi-langchain
 
-run_backend:
+run_backend_pandasai:
 	uvicorn backend.pandasai_app.main:app --port 9000
+
+run_backend_langchain:
+	uvicorn backend.langchain_app.app.main:app --port 8000
+
 
 run_app:
 	streamlit run frontend/app/main.py
