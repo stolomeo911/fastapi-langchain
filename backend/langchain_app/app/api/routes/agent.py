@@ -1,14 +1,19 @@
 from fastapi import APIRouter, HTTPException
 from ..models import Message, ModelResponse
-from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains import ConversationChain
-from ...llm.llm import llm
 from langchain.memory import ConversationBufferWindowMemory
-import json
+import os
 import logging
+from ...core.agent_tools import call_pandasai, generate_journal_article
+from ...llm.llm import llm_cohere
+from ...core.agent import create_cohere_agent
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+os.environ["LANGCHAIN_TRACING_V2"] = 'true'
+os.environ["LANGCHAIN_API_KEY"] = "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"
+os.environ["LANGCHAIN_PROJECT"] = "ai-content-creator"
 
 router = APIRouter()
 
@@ -17,8 +22,10 @@ session_memories = {}
 
 memory = ConversationBufferWindowMemory(k=4)
 
+agent = create_cohere_agent(llm_cohere, [call_pandasai, generate_journal_article])
 
-@router.get("/chat")
+
+@router.post("/chat")
 async def chat(message: Message) -> ModelResponse:
     logger.info('Chat request has been requested..')
     try:
@@ -30,30 +37,17 @@ async def chat(message: Message) -> ModelResponse:
         memory = session_memories[session_id]
 
         # Generate the model's respons
-        conversation = ConversationChain(llm=llm, verbose=True, memory=memory)
-
-        response = conversation.predict(input=message.user_input)
+        response = agent.invoke({
+            "input": message,
+            "preamble":
+                "You are an automatic content creator from dataset"
+                "You first perform data analysis using call_pandasai tool and then generate an journal"
+                " article using generate_journal_article"
+        })
 
         logger.debug(memory.load_memory_variables({}))
 
-        # Parse the response to update the sources
-        response_data = json.loads(response)
-        if "sources" in response_data:
-            response_data["sources"] = [f"http://{source}" if not source.startswith("http") else source for source in
-                                        response_data["sources"]]
-
-        # Convert the updated response back to a JSON string
-        updated_response = json.dumps(response_data)
-
-        model_response = ModelResponse(user_input=message.user_input, response=updated_response)
+        model_response = ModelResponse(user_input=message.user_input, response=response['output'])
         return model_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# You can use this debug method to check how the (raw) output of the model looks like
-@router.get("/debug")
-async def debug():
-    prompt = ChatPromptTemplate.from_template("Answer to the user's question: {q}")
-    chain = prompt | llm
-    return chain.invoke({"q": "dummy question"})

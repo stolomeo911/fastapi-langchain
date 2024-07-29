@@ -18,23 +18,12 @@ load_session_state(st.session_state, file_path=persist_file_path)
 
 async def retrieve_bot_response(user_input, session_id):
     async with aiohttp.ClientSession() as session:
-        payload = {"query": user_input, "user_id": 'try',
-                                        "slack_id": session_id, "llm_type": 'gpt'}
+        payload = {"user_input": user_input, "session_id": session_id}
         print(payload)
-        data = await make_request(session, 'get', f'{URL}/agent/ask_question',
+        data = await make_request(session, 'post', f'{URL}/agent/chat',
                                   json=payload)
-        if "agent_response" in data.keys():
-            agent_response = data["agent_response"]
-        else:
-            agent_response = data
-
-        response = agent_response['response']
-        tokens_used = agent_response['tokens_used']
-        total_cost = agent_response['total_cost']
-        response_type = agent_response['response_type']
-        explanation = agent_response['explanation']
-        last_code_executed = agent_response['last_code_executed']
-        conversation_id = agent_response['conversation_id']
+        response = data['response']
+        response_type = 'string'
         logger.info('This is the response..')
         logger.info(response)
         logger.debug('Session context before response..')
@@ -55,8 +44,6 @@ async def retrieve_bot_response(user_input, session_id):
                 elif filename.endswith('csv'):
                     df = pd.read_csv(BytesIO(file_data))
                     st.dataframe(df)
-        else:
-            st.markdown(response)
 
         # Process the response
         counter = 0

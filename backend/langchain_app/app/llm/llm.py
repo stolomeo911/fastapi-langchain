@@ -2,6 +2,7 @@ import json
 from transformers import pipeline, set_seed
 from typing import Optional, List, Any
 from langchain_core.callbacks import CallbackManagerForLLMRun
+import os
 
 
 class HuggingFaceLLM:
@@ -25,4 +26,12 @@ class HuggingFaceLLM:
 
 
 # Create an instance of the real LLM
-llm = HuggingFaceLLM(model_name="gpt2", seed=42)
+from langchain_openai import ChatOpenAI
+llm = ChatOpenAI(model="gpt-4o-2024-05-13", openai_api_key=os.environ['GPT_API_KEY'])
+
+# LLM
+from langchain_cohere.chat_models import ChatCohere
+
+llm_cohere = ChatCohere(model="command-r-plus",
+                        cohere_api_key=os.environ['COHERE_API_KEY'], temperature=0.3)
+
