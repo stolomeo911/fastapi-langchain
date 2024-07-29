@@ -1,11 +1,10 @@
-import os
-
+import logging
 from shared_libraries.make_request import parse_multipart
 from langchain_core.tools import tool
 import requests
 from .consts import PANDASAI_URL
 from typing import Annotated
-from langchain_openai import ChatOpenAI
+from ..llm.llm import llm_cohere
 
 @tool
 def call_pandasai(
@@ -33,11 +32,59 @@ def call_pandasai(
 # Define the tool for calling the LLM to generate a journal article
 @tool
 def generate_journal_article(
-    data: Annotated[dict, "This is the data received from PandasAI"],
+        data: Annotated[dict, "This is the data received from PandasAI"]
 ):
     """Use this to call the LLM to generate a journal article based on the data received."""
-    llm = ChatOpenAI(model="gpt-4o-2024-05-13",
-                     openai_api_key=os.environ['GPT_API_KEY'])
-    prompt = f"Create a journal article based on the following data:\n\n{data}"
-    article = llm.call_as_llm(prompt)
+
+    # Create a detailed prompt for the LLM
+    prompt = f"""
+    Write a detailed journal article based on the following data. The article should include a title, an introduction,
+     key findings, a discussion of current trends and future projections, and a conclusion. 
+     The style should be similar to articles on Our World in Data, including a byline, date, and a section encouraging 
+     citation and reuse of the work. The article should be maximum 250 words. Use bold to highlights most important findings and insights.
+        Here is the data:
+    {data}
+
+    Article format:
+
+    Title: [Insert Title Based on Data]
+
+    By: [Your Name]
+    [Current Date]
+    Cite this article
+    Reuse our work freely
+
+    Introduction:
+    Provide a brief overview of the data analysis, highlighting the main focus and the importance of the findings. 
+    Discuss why this topic is significant and what the reader can expect to learn from the article.
+
+    Key Findings:
+    - Summarize the most significant findings from the data. This can include highest and lowest values, averages,
+     and any notable trends or anomalies. Provide context and explanations for these findings,
+      making sure they are accessible to a general audience.
+
+    Current Trends and Future Projections:
+    Discuss the current state of the topic based on the data provided. Include any relevant statistics, graphs, or
+     charts. Then, make projections about how these trends might change in the future. Consider factors such as
+      technological advancements, policy changes, and socio-economic influences that could impact these trends.
+
+    Implications:
+    Explain the broader implications of the findings. Discuss how different regions or demographics might be affected 
+    and what the potential consequences are. Include considerations of geographical, environmental, and socio-economic 
+    factors. 
+
+    Conclusion:
+    Summarize the key points discussed in the article. Emphasize the broader implications of the findings and the
+     importance of ongoing research and monitoring. Encourage actions or policies that could address the issues raised.
+
+    Remember to follow the style and tone of Our World in Data articles. Make sure the article is informative, 
+    well-structured, and engaging for the reader.
+    """
+
+    logging.debug(f"Generated prompt for LLM: {prompt}")
+
+    # Call the LLM to generate the article
+    article = llm_cohere.invoke(prompt)
+
+    logging.debug(f"Generated article: {article}")
     return article

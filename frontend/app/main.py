@@ -22,7 +22,6 @@ async def retrieve_bot_response(user_input, session_id):
         print(payload)
         data = await make_request(session, 'post', f'{URL}/agent/chat',
                                   json=payload)
-
         response = data['response']
         response_type = 'string'
         logger.info('This is the response..')
@@ -45,8 +44,6 @@ async def retrieve_bot_response(user_input, session_id):
                 elif filename.endswith('csv'):
                     df = pd.read_csv(BytesIO(file_data))
                     st.dataframe(df)
-        else:
-            st.markdown(response)
 
         # Process the response
         counter = 0

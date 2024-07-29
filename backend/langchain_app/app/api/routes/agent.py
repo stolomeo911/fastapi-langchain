@@ -1,11 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from ..models import Message, ModelResponse
-from langchain_core.prompts import ChatPromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 import os
 import logging
 from ...core.agent_tools import call_pandasai, generate_journal_article
-from ...llm.llm import llm, llm_cohere
+from ...llm.llm import llm_cohere
 from ...core.agent import create_cohere_agent
 
 logger = logging.getLogger(__name__)
@@ -52,11 +51,3 @@ async def chat(message: Message) -> ModelResponse:
         return model_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# You can use this debug method to check how the (raw) output of the model looks like
-@router.get("/debug")
-async def debug():
-    prompt = ChatPromptTemplate.from_template("Answer to the user's question: {q}")
-    chain = prompt | llm
-    return chain.invoke({"q": "dummy question"})
