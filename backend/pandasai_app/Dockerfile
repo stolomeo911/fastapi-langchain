@@ -11,7 +11,7 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_NO_INTERACTION=1 \
     POETRY_VERSION=1.7.1 \
     POETRY_ROOT_FOLDER=../../ \
-    FOLDER_ROOT=backend/app \
+    FOLDER_ROOT=backend/pandasai_app \
     SHARED_LIBRARIES=shared_libraries
 
 # Adjust the PATH to include Poetry and ensure global packages are on it

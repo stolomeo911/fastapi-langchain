@@ -3,7 +3,8 @@ version: "3.8"
 services:
   langchain_server:
     container_name: langchain_server
-    build: ./backend/langchain_app
+    build:
+      context: ./backend/langchain_app
     restart: always
     command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
     expose:
@@ -14,7 +15,9 @@ services:
 
   pandasai_server:
     container_name: pandasai_server
-    build: ./backend/pandasai_app
+    build:
+      context: .
+      dockerfile: backend/pandasai_app/Dockerfile
     restart: always
     command: uvicorn backend.app.main:app --host 0.0.0.0 --port 9000
     expose:
@@ -25,7 +28,8 @@ services:
 
   streamlit_frontend:
     container_name: streamlit_frontend
-    build: ./frontend
+    build:
+      context: ./frontend
     restart: always
     expose:
       - 8501
