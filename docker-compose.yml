@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: backend/pandasai_app/Dockerfile
     restart: always
-    command: uvicorn backend.app.main:app --host 0.0.0.0 --port 9000
+    command: uvicorn backend.pandasai_app.main:app --host 0.0.0.0 --port 9000
     expose:
       - 9000
     ports:

@@ -33,4 +33,4 @@ COPY ./$SHARED_LIBRARIES/ opt/$SHARED_LIBRARIES/
 
 WORKDIR opt/
 
-CMD uvicorn backend.app.main:app --port 9000
+CMD uvicorn backend.pandasai_app.main:app --port 9000
