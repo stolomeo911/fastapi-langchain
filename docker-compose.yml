@@ -4,7 +4,8 @@ services:
   langchain_server:
     container_name: langchain_server
     build:
-      context: ./backend/langchain_app
+      context: .
+      dockerfile: ./backend/langchain_app/Dockerfile
     command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
     expose:
       - 8000
