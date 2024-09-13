@@ -1,4 +1,3 @@
-from shared_libraries.utils import _fetch_secret_key
 from fastapi import HTTPException
 import os
 import aiohttp

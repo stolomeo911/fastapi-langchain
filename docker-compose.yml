@@ -30,9 +30,12 @@ services:
     container_name: streamlit_frontend
     build:
       context: ./frontend
+    command: "streamlit run main.py --server.port=8501 --server.address=0.0.0.0"
+    volumes:
+      - ./frontend/app:/code
     expose:
       - 8501
-    command: streamlit run app/main.py
-    #command: tail -f /dev/null
+    ports:
+      - 8501:8501
     env_file: ".env"
 
