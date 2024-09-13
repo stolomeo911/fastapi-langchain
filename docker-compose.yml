@@ -32,6 +32,7 @@ services:
       context: ./frontend
     expose:
       - 8501
-
+    command: streamlit run app/main.py
+    #command: tail -f /dev/null
     env_file: ".env"
 
