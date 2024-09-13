@@ -15,7 +15,7 @@ COPY app/ code/app/
 WORKDIR /code
 
 ENV PYTHONPATH=/code
-ENV URL='http://fastapi_server:8000'
+#ENV URL='http://fastapi_server:8000'
 ENV PERSIST_DIR='helpers/persist_directory'
 EXPOSE 8501
 

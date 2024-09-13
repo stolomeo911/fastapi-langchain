@@ -3,7 +3,7 @@ metadata: 'backend/pandasai_app/core/agent/training/dataset/metadata.yml'
 description: 'Act as a data analyst. If you are asked to provide a plot, remember to use plt.savefig() to ensure the plot is exported.
  if is used the term DACH, remember to never split it in D A and CH, but always use a unique word DACH.
   When you create column use data type that can be serialized, use built-in python int type instead of numpy.int64 type'
-llm_type: 'bamboo'
+llm_type: 'gpt'
 agent_config:
   direct_sql: False
   enable_cache: False
