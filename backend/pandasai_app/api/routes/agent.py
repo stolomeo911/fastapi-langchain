@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-agent = get_agent()
+#agent = get_agent()
 
+agents = {}
 
 @router.get('/')
 async def index():
@@ -27,6 +28,29 @@ async def index():
 
 @router.get('/ask_question')
 async def ask_question(question: Question):
+    session_id = question.user_id
+    selected_dataset = question.dataset
+
+    logger.info(f"Received request from session {session_id} with dataset {selected_dataset}")
+
+    # Check if an agent exists for this session
+    if session_id in agents:
+        agent_info = agents[session_id]
+        if agent_info['selected_dataset'] != selected_dataset:
+            # Dataset has changed, create a new agent with the new dataset
+            agent = get_agent(selected_dataset)
+            agents[session_id] = {'agent': agent, 'selected_dataset': selected_dataset}
+            logger.info(f"Dataset changed for session {session_id}, agent recreated.")
+        else:
+            # Use existing agent
+            agent = agent_info['agent']
+            logger.info(f"Using existing agent for session {session_id}.")
+    else:
+        # No agent exists for this session, create a new one
+        agent = get_agent('csv', selected_dataset)
+        agents[session_id] = {'agent': agent, 'selected_dataset': selected_dataset}
+        logger.info(f"Created new agent for session {session_id}.")
+
     query = question.query
     final_message = agent.rephrase_query(query) + ''
     logger.info(f'Rephrased query {query} to {final_message}')
@@ -112,13 +136,19 @@ async def get_agent_info():
             [f"• *{list(field_description.keys())[0]}*: {list(field_description.values())[0]}" for field_description in
              df[0].field_descriptions])
 
+        metadata = {
+            'columns': df.columns.tolist(),
+            'data_types': df.dtypes.apply(lambda x: str(x)).tolist(),
+            'summary_stats': df.describe(include='all').to_dict()
+        }
+
         return {
             "start_date": start_date,
             "end_date": end_date,
-            "field_descriptions": field_descriptions}
+            "field_descriptions": field_descriptions,
+            "metadata": metadata}
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
-
 
 @router.get('/ask_clarification_question')
 async def ask_clarification_quetions(question: Question):

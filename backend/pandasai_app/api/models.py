@@ -23,7 +23,7 @@ class Agent:
 class Question:
     query: str
     user_id: str
-    slack_id: str
+    dataset: str
     llm_type: str
 
 

@@ -48,14 +48,14 @@ def get_pandasai_agent(connector, config, vector_store=None, description=None):
 
 
 @app.command()
-def get_agent(source='csv', mode='pandas_generator', add_skills=True) -> Agent:
+def get_agent(source, dataset_name, add_skills=True) -> Agent:
     config = yaml.load(open('backend/pandasai_app/core/agent/training/config.yml'), Loader=Loader)
     metadata = yaml.load(open(config['metadata']), Loader=Loader)
 
     if source == 'csv':
-        df = pd.read_csv(config['file_path'])
+        df = pd.read_csv(config[dataset_name])
     elif source == 'pickle':
-        df = pd.read_pickle(config['file_path'])
+        df = pd.read_pickle(config[dataset_name])
     else:
         raise NotImplementedError
 
@@ -66,13 +66,7 @@ def get_agent(source='csv', mode='pandas_generator', add_skills=True) -> Agent:
 
     agent_config = {"llm": llm,
               **config['agent_config']}
-    if mode == 'pandas_generator':
-        agent = get_pandasai_agent(connector, agent_config, vector_store, config['description'])
-    elif mode == 'sql_generator':
-        sql_connector = connect_to_db()
-        agent = get_pandasai_agent(sql_connector, agent_config, vector_store, None)
-    else:
-        raise NotImplementedError
+    agent = get_pandasai_agent(connector, agent_config, vector_store, config['description'])
 
     if add_skills:
         agent.add_skills(plot_daily_run_rate_leads)

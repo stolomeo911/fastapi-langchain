@@ -6,7 +6,7 @@ from helpers.format_response import format_response
 from helpers.persist_session_state import save_session_state, load_session_state
 from helpers.make_request import make_request
 from utils.logs import setup_logger
-from consts import URL, PERSIST_DIR, SESSION_ID
+from consts import LANGCHAIN_URL, PERSIST_DIR, SESSION_ID
 import pandas as pd
 from io import BytesIO
 
@@ -18,10 +18,10 @@ load_session_state(st.session_state, file_path=persist_file_path)
 
 async def retrieve_bot_response(user_input, session_id):
     async with aiohttp.ClientSession() as session:
-        payload = {"user_input": user_input, "session_id": session_id}
+        payload = {"user_input": user_input, "session_id": session_id,
+                   "user_id": 'aaaa'}
         print(payload)
-        data = await make_request(session, 'post', f'{URL}/agent/chat',
-                                  json=payload)
+        data = await make_request(session, 'post', f'{LANGCHAIN_URL}/agent/chat', json=payload)
         response = data['response']
         response_type = 'string'
         logger.info('This is the response..')
@@ -62,18 +62,43 @@ async def retrieve_bot_response(user_input, session_id):
 
         return stream_data
 
-
 st.title("Chatbot")
 
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+# ---- Modified Code Starts Here ----
+
+# Define categories and their respective datasets
+categories = {
+    "Climate Change": [
+        "CO2 Emission by Country",
+        "Temperature Change by Country"
+    ],
+    "Mental Health": [
+        "Suicide Rate by Country"
+    ]
+}
+
+# Display the category selectbox in the sidebar with the desired title
+selected_category = st.sidebar.selectbox("Category", list(categories.keys()))
+
+# Display the dataset radio buttons in the sidebar under the selected category
+selected_dataset = st.sidebar.radio("Dataset", options=categories[selected_category])
+
+# Save the user's choice into the session state
+st.session_state['selected_category'] = selected_category
+st.session_state['selected_dataset'] = selected_dataset
+
+# Log the selected category and dataset
+logger.info(f"User selected category: {selected_category}, dataset: {selected_dataset}")
+
+
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
 
 # Accept user input
 if prompt := st.chat_input("What is up?"):
@@ -101,7 +126,12 @@ if prompt := st.chat_input("What is up?"):
 
     # Add assistant response to chat history
     st.session_state.messages.append(
-        {"role": "assistant", "content": full_response, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+        {
+            "role": "assistant",
+            "content": full_response,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+    )
 
     logger.debug(f"Assistant response added to chat history: {full_response}")
 

@@ -1,4 +1,7 @@
-file_path: 'backend/pandasai_app/core/agent/training/dataset/GlobalLandTemperaturesByCountry.csv'
+#file_path: 'backend/pandasai_app/core/agent/training/dataset/GlobalLandTemperaturesByCountry.csv'
+CO2 Emission by Country: 'backend/pandasai_app/core/agent/training/dataset/CC_co2_emissions_by_country.csv'
+Temperature Change by Country: 'backend/pandasai_app/core/agent/training/dataset/CC_Temperature_Change_by_Country.csv'
+Suicide Rate by Country: 'backend/pandasai_app/core/agent/training/dataset/MH_suicide_rate_by_country.csv'
 metadata: 'backend/pandasai_app/core/agent/training/dataset/metadata.yml'
 description: 'Act as a data analyst. If you are asked to provide a plot, remember to use plt.savefig() to ensure the plot is exported.
  if is used the term DACH, remember to never split it in D A and CH, but always use a unique word DACH.

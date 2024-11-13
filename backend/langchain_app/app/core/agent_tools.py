@@ -1,10 +1,14 @@
 import logging
+
+import pandas as pd
+
 from shared_libraries.make_request import parse_multipart
 from langchain_core.tools import tool
 import requests
 from .consts import PANDASAI_URL
 from typing import Annotated
 from ..llm.llm import llm_cohere
+
 
 @tool
 def call_pandasai(
@@ -13,7 +17,7 @@ def call_pandasai(
     """Use this to call pandasai api that will response to you with a json data
     The result is visible to the user."""
     payload = {"query": question, "user_id": 'try',
-               "slack_id": 'aaaa', "llm_type": 'gpt'}
+               "dataset": 'Temperature Change by Country', "llm_type": 'gpt'}
     print(payload)
     """Use this to execute python code. If you want to see the output of a value,
     you should print it out with `print(...)`. This is visible to the user."""
@@ -27,6 +31,38 @@ def call_pandasai(
         return parse_multipart(response)
     else:
         return response.json()
+
+
+def extract_metadata(df: pd.DataFrame):
+    """Extract metadata from the dataframe including column names, data types, and summary statistics."""
+    metadata = {
+        'columns': df.columns.tolist(),
+        'data_types': df.dtypes.apply(lambda x: str(x)).tolist(),
+        'summary_stats': df.describe(include='all').to_dict()
+    }
+    return metadata
+
+
+@tool
+def generate_suggested_questions(metadata):
+    """Generate a prompt for the LLM to suggest questions based on the metadata."""
+    columns = metadata['columns']
+    data_types = metadata['data_types']
+    summary = metadata['summary_stats']
+
+    prompt = f"""
+    Based on the following dataset metadata, suggest questions the user can ask for analysis 
+    to use in a data journal article.
+
+    Columns: {columns}
+    Data types: {data_types}
+    Summary Statistics: {summary}
+
+    Provide a list of questions to explore the dataset and create a story telling
+    based
+    """
+
+    return prompt
 
 
 # Define the tool for calling the LLM to generate a journal article
